@@ -28,9 +28,6 @@ export function HeroSection({ user }: HeroSectionProps) {
                   Report Missing Person or Item
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="border-purple-200 text-purple-700 hover:bg-purple-50">
-                Connect XION Wallet
-              </Button>
               {user ? null : (
                 <>
                   <Button asChild variant="outline" size="lg">
@@ -55,73 +52,6 @@ export function HeroSection({ user }: HeroSectionProps) {
               className="object-cover"
               priority
             />
-          </div>
-        </div>
-
-        {/* XION Blockchain Section - Prominent Display */}
-        <div className="mt-12 bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-2xl p-8 border border-purple-200/50">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-3 rounded-full bg-purple-100 px-6 py-3 text-sm font-semibold text-purple-800 mb-4">
-              <div className="h-3 w-3 rounded-full bg-purple-600 animate-pulse"></div>
-              Powered by XION Blockchain
-            </div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Blockchain-Verified Community Safety
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Every report, sighting, and identity is secured on the XION blockchain. 
-              Immutable verification, transparent governance, and decentralized trust 
-              for community-powered safety networks.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center p-6 bg-white/80 rounded-lg border border-purple-200">
-              <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center mx-auto mb-3">
-                <Shield className="h-5 w-5 text-purple-600" />
-              </div>
-              <h4 className="font-semibold text-purple-900 mb-2">On-Chain Reports</h4>
-              <p className="text-sm text-purple-700">
-                All reports stored immutably on XION blockchain with cryptographic verification
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white/80 rounded-lg border border-purple-200">
-              <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <Users className="h-5 w-5 text-blue-600" />
-              </div>
-              <h4 className="font-semibold text-blue-900 mb-2">Decentralized Identity</h4>
-              <p className="text-sm text-blue-700">
-                User identities verified and secured through XION's decentralized identity system
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white/80 rounded-lg border border-purple-200">
-              <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-3">
-                <Eye className="h-5 w-5 text-green-600" />
-              </div>
-              <h4 className="font-semibold text-green-900 mb-2">Transparent Governance</h4>
-              <p className="text-sm text-green-700">
-                Community voting and governance powered by XION smart contracts
-              </p>
-            </div>
-          </div>
-          
-          <div className="text-center mt-8">
-            <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <span>XION Network Active</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                <span>Smart Contracts Deployed</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
-                <span>Blockchain Verified</span>
-              </div>
-            </div>
           </div>
         </div>
 

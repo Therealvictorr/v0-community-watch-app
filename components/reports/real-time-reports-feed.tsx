@@ -22,7 +22,8 @@ import {
   Filter,
   Search,
   RefreshCw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Brain
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +31,8 @@ import { createClient } from '@/lib/supabase/client';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { Trash2 } from 'lucide-react';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { AIResponsePanel } from '@/components/ai/ai-response-panel';
+import { GeneratedResponse } from '@/lib/ai-response-generator';
 
 interface Report {
   id: string;
@@ -83,8 +86,51 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
   const [reportToDelete, setReportToDelete] = useState<Report | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  
+  // AI Response state
+  const [aiResponses, setAiResponses] = useState<Record<string, GeneratedResponse>>({});
+  const [expandedAIReports, setExpandedAIReports] = useState<Set<string>>(new Set());
 
   const supabase = createClient();
+  
+  // Convert database Report to blockchain Report format
+  const convertToBlockchainReport = (dbReport: Report) => {
+    return {
+      id: dbReport.id,
+      title: dbReport.subject,
+      description: dbReport.description || '',
+      location: {
+        latitude: 0, // Default - would need to parse from last_seen_location
+        longitude: 0, // Default - would need to parse from last_seen_location
+        address: dbReport.last_seen_location
+      },
+      category: dbReport.report_type.replace('_', ' '),
+      severity: 5, // Default - could calculate based on report type
+      reporter: dbReport.reporter_id || 'unknown',
+      timestamp: new Date(dbReport.created_at).getTime(),
+      status: dbReport.status as "Open" | "InProgress" | "Resolved" | "Closed",
+      attachments: dbReport.attachments?.map(a => a.url) || [],
+      verified_count: dbReport.sighting_count || 0,
+      disputed_count: 0 // Default - not tracked in database
+    };
+  };
+  
+  // AI Response handler
+  const handleAIResponseGenerated = (reportId: string, response: GeneratedResponse) => {
+    setAiResponses(prev => ({ ...prev, [reportId]: response }));
+  };
+  
+  const toggleAIExpansion = (reportId: string) => {
+    setExpandedAIReports(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
+  };
 
   // Real-time subscription to reports
   useEffect(() => {
@@ -603,7 +649,35 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
+                
+                {/* AI Analysis Toggle */}
+                <div className="pt-2 border-t">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => toggleAIExpansion(report.id)}
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Brain className="h-4 w-4" />
+                    {expandedAIReports.has(report.id) ? 'Hide AI Analysis' : 'Show AI Analysis'}
+                    {aiResponses[report.id] && (
+                      <Badge variant="secondary" className="ml-auto">
+                        {Math.round(aiResponses[report.id].confidence * 100)}%
+                      </Badge>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
+              
+              {/* AI Response Panel */}
+              {expandedAIReports.has(report.id) && (
+                <div className="border-t">
+                  <AIResponsePanel 
+                    report={convertToBlockchainReport(report)}
+                    onResponseGenerated={(response) => handleAIResponseGenerated(report.id, response)}
+                  />
+                </div>
+              )}
             </Card>
           );
         })}
