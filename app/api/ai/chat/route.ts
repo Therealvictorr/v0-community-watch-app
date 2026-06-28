@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       )}`
     : '\nNo reports are currently in the system.'
 
-  const systemPrompt = `You are a Community Watch AI assistant. You help community members understand safety reports, find information, and analyze patterns.
+  const systemPrompt = `You are a SafeCircle AI assistant. You help community members understand safety reports, find information, and analyze patterns.
 
 You have access to the following live report data:${reportsContext}
 

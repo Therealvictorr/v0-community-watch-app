@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { BrandLogo } from '@/components/brand-logo'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Shield, Plus, Map, User, LogOut } from 'lucide-react'
+import { Shield, Plus, User, LogOut } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 interface HeaderProps {
@@ -41,10 +42,7 @@ export function Header({ user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">Community Watch</span>
-        </Link>
+        <BrandLogo textClassName="text-xl" />
 
 
         <div className="flex items-center gap-3">

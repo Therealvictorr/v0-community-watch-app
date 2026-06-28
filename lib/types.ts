@@ -1,4 +1,4 @@
-// vCon-based types for Community Watch
+// vCon-based types for SafeCircle
 
 export type ReportType = 'missing_child' | 'missing_item' | 'general_incident'
 export type ReportStatus = 'active' | 'resolved' | 'closed'

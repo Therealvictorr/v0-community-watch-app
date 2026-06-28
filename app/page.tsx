@@ -41,12 +41,7 @@ export default async function HomePage() {
             </TabsContent>
             
             <TabsContent value="ai" className="mt-4">
-              <CommunityAssistant 
-              reports={reportsWithCounts || []} 
-              userLocation={userLocation}
-              currentUserId={user?.id}
-            />
-              <CommunityAssistant reports={reportsWithCounts || []} />
+              <CommunityAssistant reports={mockReports} />
             </TabsContent>
             
             <TabsContent value="drone-ops" className="mt-4">
@@ -149,7 +144,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-3xl font-bold mb-4">Autonomous Drone Operations</h3>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8 text-pretty">
-                Soon, Community Watch will serve as a continuous 'guiding eye' for security agencies. 
+                Soon, SafeCircle will serve as a continuous 'guiding eye' for security agencies. 
                 Using interconnected neighborhood AI security cameras and automated drone dispatches, 
                 we'll be able to proactively scan locations the second an incident is logged.
               </p>
