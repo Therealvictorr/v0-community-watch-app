@@ -64,7 +64,7 @@ export function ReportProgressTracker({ reportId, reportTitle, reportType }: Rep
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  // Mock data - in real app, this would come from API/blockchain
+  // Mock data - in real app, this would come from API/community
   useEffect(() => {
     const mockProgress: ReportProgress = {
       reportId,
@@ -140,7 +140,7 @@ export function ReportProgressTracker({ reportId, reportTitle, reportType }: Rep
           avatar: "/avatars/sarah.jpg"
         },
         {
-          name: "Community Watch",
+          name: "SafeCircle",
           role: "Volunteer"
         }
       ],

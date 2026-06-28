@@ -44,8 +44,8 @@ export function TransactionMonitor({
     setUpdating(prev => new Set(prev).add(hash));
     
     try {
-      // Simulate checking transaction status on blockchain
-      // In a real implementation, you would query the blockchain
+      // Simulate checking transaction status on community
+      // In a real implementation, you would query the community
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Randomly determine status for demo
@@ -110,7 +110,7 @@ export function TransactionMonitor({
   };
 
   const getExplorerUrl = (hash: string) => {
-    return `https://explorer.xion.burnt.com/tx/${hash}`;
+    return `https://explorer.safecircle.burnt.com/tx/${hash}`;
   };
 
   const formatTimeAgo = (timestamp: number) => {
@@ -152,7 +152,7 @@ export function TransactionMonitor({
           <AlertTriangle className="h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Transactions</h3>
           <p className="text-gray-600 text-center">
-            Your transaction history will appear here once you start using the blockchain features.
+            Your transaction history will appear here once you start using the community features.
           </p>
         </CardContent>
       </Card>

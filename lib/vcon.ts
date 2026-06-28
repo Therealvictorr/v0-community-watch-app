@@ -114,8 +114,8 @@ export function buildVconObject(input: {
     dialog: [reportDialog, ...sightingDialogs],
     analysis: [
       {
-        type: 'community-watch-report',
-        vendor: 'v0-community-watch-app',
+        type: 'safecircle-report',
+        vendor: 'v0-safecircle-app',
         body: {
           report_id: report.id,
           report_status: report.status,
@@ -124,7 +124,7 @@ export function buildVconObject(input: {
       },
     ],
     tags: {
-      app: 'community-watch',
+      app: 'safecircle',
       report_type: report.report_type,
       status: report.status,
     },

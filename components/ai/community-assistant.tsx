@@ -34,7 +34,7 @@ export function CommunityAssistant({ reports = [], userLocation }: CommunityAssi
     {
       id: "1",
       type: "assistant",
-      content: "Hi! I'm your Community Watch AI assistant powered by Groq. I can analyze reports, identify patterns, and provide safety insights from live data. What would you like to know?",
+      content: "Hi! I'm your SafeCircle AI assistant powered by Groq. I can analyze reports, identify patterns, and provide safety insights from live data. What would you like to know?",
       timestamp: new Date(),
       suggestions: [
         "Show recent missing person reports",

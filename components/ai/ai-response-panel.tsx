@@ -7,11 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Brain, Shield, Users, Zap, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { aiResponseGenerator, GeneratedResponse } from '@/lib/ai-response-generator';
-import { Report } from '@/lib/xion-contracts';
-import { useXionWallet } from '@/hooks/use-xion-wallet';
 
 interface AIResponsePanelProps {
-  report: Report;
+  report: any;
   onResponseGenerated?: (response: GeneratedResponse) => void;
 }
 
@@ -19,7 +17,6 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
   const [response, setResponse] = useState<GeneratedResponse | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { address, isConnected } = useXionWallet();
 
   useEffect(() => {
     if (report) {
@@ -32,7 +29,7 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
     setError(null);
     
     try {
-      const generatedResponse = await aiResponseGenerator.generateRealisticResponse(report, address);
+      const generatedResponse = await aiResponseGenerator.generateRealisticResponse(report);
       setResponse(generatedResponse);
       onResponseGenerated?.(generatedResponse);
     } catch (err) {
@@ -84,8 +81,7 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
             <div className="text-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin mx-auto" />
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Analyzing blockchain data...</p>
-                <p className="text-xs text-muted-foreground">Querying smart contracts...</p>
+                <p className="text-sm text-muted-foreground">Analyzing community data...</p>
                 <p className="text-xs text-muted-foreground">Generating realistic response...</p>
               </div>
             </div>
@@ -130,10 +126,10 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
             AI-Powered Analysis
           </div>
           <div className="flex items-center gap-2">
-            {response.blockchainVerified && (
+            {response.communityVerified && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 <CheckCircle className="h-3 w-3" />
-                Blockchain Verified
+                Community Verified
               </Badge>
             )}
             <Badge variant="outline" className={getConfidenceColor(response.confidence)}>
@@ -182,7 +178,7 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
           <div className="space-y-3">
             <h4 className="font-semibold text-sm flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Related Blockchain Entities
+              Related Community Entities
             </h4>
             <div className="flex flex-wrap gap-2">
               {response.relatedEntities.map((entity, index) => (
@@ -223,16 +219,6 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
             </div>
           </div>
         </div>
-
-        {/* Blockchain Connection Status */}
-        {!isConnected && (
-          <Alert>
-            <Shield className="h-4 w-4" />
-            <AlertDescription>
-              Connect your XION wallet to enable blockchain-verified responses and enhanced analysis.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Regenerate Button */}
         <Button onClick={generateResponse} variant="outline" size="sm" className="w-full">

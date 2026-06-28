@@ -3,10 +3,10 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Community Watch - Report & Find Missing Persons and Items',
+  title: 'SafeCircle - Report & Find Missing Persons and Items',
   description:
     'A community-driven platform to report missing children, vehicles, and items. Help your neighbors stay safe by reporting sightings and keeping watch together.',
-  generator: 'Community Watch',
+  generator: 'SafeCircle',
   icons: {
     icon: [
       {
