@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { IdanuBrand } from '@/components/idanu-brand'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -42,12 +43,12 @@ export function Header({ user }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">Community Watch</span>
+
+          <IdanuBrand />
         </Link>
 
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3"><Link href="/notifications" className="text-xs">Inbox</Link><Link href="/admin" className="hidden sm:inline text-xs">Review desk</Link><Link href="/#location-stats" className="hidden sm:inline text-xs">Location stats</Link>
           {user ? (
             <>
               <Button asChild size="sm">

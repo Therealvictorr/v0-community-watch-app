@@ -144,9 +144,9 @@ export function SightingForm({ reportId, userId }: SightingFormProps) {
         }
         
         // Only add location coordinates if columns exist
-        if (userLocation?.lat && userLocation?.lng) {
-          sightingData.latitude = userLocation.lat
-          sightingData.longitude = userLocation.lng
+        if (userLocation && Number.isFinite(userLocation.lat) && Number.isFinite(userLocation.lng)) {
+          sightingData.lat = userLocation.lat
+          sightingData.lng = userLocation.lng
         }
 
       const { error: insertError } = await supabase

@@ -32,9 +32,9 @@ export function GoogleMaps({ reports, sightings, height = '400px' }: GoogleMapsP
     const script = document.createElement('script')
     script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`
     script.async = true
-    script.defer = true
+    script.defer = true;
     
-    window.initMap = () => {
+    (window as any).initMap = () => {
       if (!mapRef.current) return
 
       const map = new (window as any).google.maps.Map(mapRef.current, {

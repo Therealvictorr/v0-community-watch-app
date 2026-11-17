@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { isSupabaseConfigured } from '@/lib/supabase/env'
 import { mockReports, mockSightings } from '@/lib/mock-data'
+import { signedAttachments, isAdmin } from '@/lib/case-access'
 import { buildVconObject } from '@/lib/vcon'
 import type { Report, ReportAttachment, Sighting } from '@/lib/types'
 
@@ -66,8 +67,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     vcon_uuid: report.vcon_uuid || report.uuid || report.id,
   }
 
-  const typedAttachments: ReportAttachment[] = report.attachments || []
-  const typedSightings: Sighting[] = sightings || []
+  const typedAttachments: ReportAttachment[] = await signedAttachments(supabase, report.attachments || [])
+  const { data: { user } } = await supabase.auth.getUser()
+  const admin = user ? await isAdmin(supabase) : false
+  const typedSightings: Sighting[] = (sightings || []).filter(s => user && (admin || report.reporter_id === user.id || s.reporter_id === user.id))
+  delete typedReport.contact_phone
+  delete typedReport.contact_email
+  delete typedReport.contact_name
 
   const vcon = buildVconObject({
     report: typedReport,

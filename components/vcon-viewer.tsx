@@ -161,11 +161,11 @@ export function VconViewer({ vcon, reportType }: VconViewerProps) {
                           </span>
                         </div>
                         <p className="text-xs text-gray-200 leading-relaxed">{entry.body}</p>
-                        {entry.meta?.last_seen_location && (
-                          <p className="text-xs text-gray-500 mt-1">📍 {String(entry.meta.last_seen_location)}</p>
+                        {Boolean(entry.meta?.last_seen_location) && (
+                          <p className="text-xs text-gray-500 mt-1">📍 {String(entry.meta?.last_seen_location)}</p>
                         )}
-                        {entry.meta?.location_description && (
-                          <p className="text-xs text-gray-500 mt-1">📍 {String(entry.meta.location_description)}</p>
+                        {Boolean(entry.meta?.location_description) && (
+                          <p className="text-xs text-gray-500 mt-1">📍 {String(entry.meta?.location_description)}</p>
                         )}
                       </div>
                     </div>

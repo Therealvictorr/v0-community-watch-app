@@ -32,7 +32,7 @@ export function AIResponsePanel({ report, onResponseGenerated }: AIResponsePanel
     setError(null);
     
     try {
-      const generatedResponse = await aiResponseGenerator.generateRealisticResponse(report, address);
+      const generatedResponse = await aiResponseGenerator.generateRealisticResponse(report, address || undefined);
       setResponse(generatedResponse);
       onResponseGenerated?.(generatedResponse);
     } catch (err) {

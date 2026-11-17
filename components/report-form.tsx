@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { LocationPicker } from '@/components/location-picker'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -27,11 +28,33 @@ interface ReportFormProps {
 
 export function ReportForm({ userId }: ReportFormProps) {
   const router = useRouter()
+  const photoInput = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   // Common fields
   const [reportType, setReportType] = useState<ReportType>('missing_child')
+  const [caseKind, setCaseKind] = useState<'missing' | 'reported_kidnapping'>('missing')
+  const [lossType, setLossType] = useState<'lost' | 'stolen' | 'found'>('lost')
+  const [incidentId, setIncidentId] = useState('')
+  const [incidentTitle, setIncidentTitle] = useState('')
+  const [incidents, setIncidents] = useState<{id:string;title:string}[]>([])
+  useEffect(() => { createClient().from('case_incidents').select('id,title').eq('owner_id',userId).then(({data}) => setIncidents(data || [])) }, [userId])
+  const [stateArea, setStateArea] = useState('')
+  const [locality, setLocality] = useState('')
+  const [latitude, setLatitude] = useState('')
+  const [longitude, setLongitude] = useState('')
+  const [locating, setLocating] = useState(false)
+  const locate = () => {
+    if (!navigator.geolocation) { setError('Location is unavailable. Enter the last-seen area manually.'); return }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(position => {
+      // Public last-seen coordinates are approximate, never a precise current position.
+      setLatitude(position.coords.latitude.toFixed(2))
+      setLongitude(position.coords.longitude.toFixed(2))
+      setLocating(false)
+    }, () => { setError('Could not get your location. You can enter the area manually.'); setLocating(false) }, { timeout: 10000, maximumAge: 60000 })
+  }
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
   const [lastSeenLocation, setLastSeenLocation] = useState('')
@@ -60,7 +83,7 @@ export function ReportForm({ userId }: ReportFormProps) {
     if (!files) return
     
     const newFiles = Array.from(files).filter(file => {
-      if (file.type.startsWith('image/')) {
+      if (['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
         return file.size <= 5 * 1024 * 1024 // 5MB limit
       }
       return false
@@ -120,7 +143,7 @@ export function ReportForm({ userId }: ReportFormProps) {
   const [personRelationship, setPersonRelationship] = useState('')
   
   // Item details
-  const [itemType, setItemType] = useState<'vehicle' | 'property' | 'pet' | 'other'>('vehicle')
+  const [itemType, setItemType] = useState<ItemDetails['item_type']>('vehicle')
   const [itemName, setItemName] = useState('')
   const [itemMake, setItemMake] = useState('')
   const [itemModel, setItemModel] = useState('')
@@ -135,6 +158,9 @@ export function ReportForm({ userId }: ReportFormProps) {
     setError(null)
 
     try {
+      if (!stateArea.trim() || !locality.trim()) throw new Error('Enter the last-seen state and town / LGA.')
+      if ((latitude === '') !== (longitude === '') || (latitude !== '' && (!Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude)) || Math.abs(Number(latitude)) > 90 || Math.abs(Number(longitude)) > 180))) throw new Error('Enter a valid latitude and longitude together, or leave both empty.')
+      if (lastSeenAt && new Date(lastSeenAt).getTime() > Date.now()) throw new Error('The last-seen time cannot be in the future.')
       const supabase = createClient()
 
       // Ensure the user profile exists (auto-creates if missing)
@@ -149,6 +175,9 @@ export function ReportForm({ userId }: ReportFormProps) {
       if (reportType === 'missing_child') {
         personDetails = {
           name: personName,
+          case_kind: caseKind,
+          state: stateArea.trim(),
+          locality: locality.trim(),
           age: personAge ? parseInt(personAge) : undefined,
           gender: personGender || undefined,
           height: personHeight || undefined,
@@ -162,6 +191,10 @@ export function ReportForm({ userId }: ReportFormProps) {
       } else if (reportType === 'missing_item') {
         itemDetails = {
           item_type: itemType,
+          loss_type: lossType === 'found' ? undefined : lossType,
+          listing_kind: lossType === 'found' ? 'found' : 'missing',
+          state: stateArea.trim(),
+          locality: locality.trim(),
           name: itemName || undefined,
           make: itemMake || undefined,
           model: itemModel || undefined,
@@ -173,26 +206,26 @@ export function ReportForm({ userId }: ReportFormProps) {
       }
 
       // First create the report
-      const { data: reportData, error: insertError } = await supabase
-        .from('reports')
-        .insert({
-          reporter_id: userId,
+      const { data: reportId, error: insertError } = await supabase.rpc('idanu_submit_case', { payload: {
           report_type: reportType,
+          incident_id: reportType === 'missing_child' && caseKind === 'reported_kidnapping' ? incidentId || null : null,
+          incident_title: reportType === 'missing_child' && caseKind === 'reported_kidnapping' && !incidentId ? incidentTitle || null : null,
           subject,
           description: description || null,
           person_details: personDetails || null,
           item_details: itemDetails || null,
-          last_seen_location: lastSeenLocation || null,
+          last_seen_location: [lastSeenLocation.trim(), locality.trim(), stateArea.trim()].filter(Boolean).join(', '),
+          last_seen_lat: latitude === '' ? null : Number(Number(latitude).toFixed(2)),
+          last_seen_lng: longitude === '' ? null : Number(Number(longitude).toFixed(2)),
           last_seen_at: lastSeenAt ? new Date(lastSeenAt).toISOString() : null,
           contact_name: contactName || null,
           contact_phone: contactPhone || null,
           contact_email: contactEmail || null,
-        })
-        .select()
-        .single()
+        } })
+      const reportData = { id: reportId }
 
       if (insertError) {
-        setError(insertError.message)
+        setError('We could not create this case. Please try again later.')
         setLoading(false)
         return
       }
@@ -246,7 +279,7 @@ export function ReportForm({ userId }: ReportFormProps) {
       router.push(`/reports/${reportData.id}`)
       router.refresh()
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.')
       setLoading(false)
     }
   }
@@ -260,7 +293,7 @@ export function ReportForm({ userId }: ReportFormProps) {
         </CardHeader>
         <CardContent>
           <Tabs value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
-            <TabsList className="grid grid-cols-3 w-full">
+            <TabsList className="grid grid-cols-2 w-full">
               <TabsTrigger value="missing_child" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Missing Person</span>
@@ -271,16 +304,13 @@ export function ReportForm({ userId }: ReportFormProps) {
                 <span className="hidden sm:inline">Missing Item</span>
                 <span className="sm:hidden">Item</span>
               </TabsTrigger>
-              <TabsTrigger value="general_incident" className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="hidden sm:inline">Incident</span>
-                <span className="sm:hidden">Incident</span>
-              </TabsTrigger>
             </TabsList>
           </Tabs>
+          {reportType === 'missing_child' ? <Field className="mt-5"><FieldLabel htmlFor="caseKind">Case category</FieldLabel><select id="caseKind" className="w-full rounded-md border p-3" value={caseKind} onChange={e => setCaseKind(e.target.value as typeof caseKind)}><option value="missing">Missing person</option><option value="reported_kidnapping">Reported kidnapping</option></select>{caseKind === 'reported_kidnapping' && <p className="text-sm text-muted-foreground">This is a reported abduction, not independent verification. Publish only a general last-seen area. Do not include possible current locations or rescue details.</p>}</Field> : <Field className="mt-5"><FieldLabel htmlFor="lossType">What happened?</FieldLabel><select id="lossType" className="w-full rounded-md border p-3" value={lossType} onChange={e => setLossType(e.target.value as typeof lossType)}><option value="lost">Lost</option><option value="stolen">Stolen</option><option value="found">I found something</option></select></Field>}
         </CardContent>
       </Card>
 
+      {reportType === 'missing_child' && caseKind === 'reported_kidnapping' && <Card className="mb-6"><CardHeader><CardTitle>Link people from the same incident</CardTitle><CardDescription>One report per person. Link their reports to count one incident without losing individual outcomes.</CardDescription></CardHeader><CardContent className="space-y-3"><label className="block text-sm">Your existing incident<select className="block border rounded p-3 w-full" value={incidentId} onChange={e=>setIncidentId(e.target.value)}><option value="">Create a new group or leave unlinked</option>{incidents.map(i=><option key={i.id} value={i.id}>{i.title}</option>)}</select></label>{!incidentId&&<label className="block text-sm">New incident name (optional, general area only)<Input maxLength={160} minLength={3} value={incidentTitle} onChange={e=>setIncidentTitle(e.target.value)} placeholder="e.g., Chikun incident, 17 November" /></label>}</CardContent></Card>}
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
@@ -457,7 +487,9 @@ export function ReportForm({ userId }: ReportFormProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="vehicle">Vehicle</SelectItem>
-                    <SelectItem value="property">Property / Electronics</SelectItem>
+                    <SelectItem value="device">Phone / Laptop / Device</SelectItem>
+                    <SelectItem value="document">Document</SelectItem>
+                    <SelectItem value="property">Other property</SelectItem>
                     <SelectItem value="pet">Pet</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
@@ -559,15 +591,18 @@ export function ReportForm({ userId }: ReportFormProps) {
             <MapPin className="h-5 w-5" />
             Last Seen Location
           </CardTitle>
-          <CardDescription>Where and when was the person/item last seen?</CardDescription>
+          <CardDescription>Last-seen area, or the area where you found the belonging. Your current location may be different.</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldGroup>
+            <LocationPicker latitude={latitude} longitude={longitude} onPick={p=>{setLatitude(String(p.lat));setLongitude(String(p.lng));if(p.state)setStateArea(p.state);if(p.locality)setLocality(p.locality);if(p.name)setLastSeenLocation(p.locality || p.state || p.name.split(',')[0])}} />
+            <div className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel htmlFor="stateArea">State / region *</FieldLabel><Input id="stateArea" required value={stateArea} onChange={e => setStateArea(e.target.value)} placeholder="e.g., Kaduna" maxLength={100} /></Field><Field><FieldLabel htmlFor="locality">Town / LGA *</FieldLabel><Input id="locality" required value={locality} onChange={e => setLocality(e.target.value)} placeholder="e.g., Chikun" maxLength={100} /></Field></div>
+            <div className="space-y-3"><Button type="button" variant="outline" disabled={locating} onClick={locate}>{locating ? 'Locating…' : 'Use my location as the last-seen area'}</Button><p className="text-xs text-muted-foreground">Optional. Coordinates are rounded to a general area and will be public. Use only if you are at the last-seen location.</p><div className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel htmlFor="latitude">Approximate latitude</FieldLabel><Input id="latitude" type="number" min="-90" max="90" step="any" value={latitude} onChange={e => setLatitude(e.target.value)} /></Field><Field><FieldLabel htmlFor="longitude">Approximate longitude</FieldLabel><Input id="longitude" type="number" min="-180" max="180" step="any" value={longitude} onChange={e => setLongitude(e.target.value)} /></Field></div></div>
             <Field>
-              <FieldLabel htmlFor="lastSeenLocation">Location</FieldLabel>
+              <FieldLabel htmlFor="lastSeenLocation">General area / landmark (public)</FieldLabel>
               <Input
                 id="lastSeenLocation"
-                placeholder="e.g., Lincoln Park, near the main entrance"
+                placeholder="General last-seen area or landmark"
                 value={lastSeenLocation}
                 onChange={(e) => setLastSeenLocation(e.target.value)}
               />
@@ -620,13 +655,14 @@ export function ReportForm({ userId }: ReportFormProps) {
                   <label className="cursor-pointer">
                     <span className="sr-only">Choose photos</span>
                     <input
+                      ref={photoInput}
                       type="file"
                       className="sr-only"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
                       multiple
                       onChange={(e) => handleFileSelect(e.target.files)}
                     />
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" onClick={() => photoInput.current?.click()}>
                       Choose Photos
                     </Button>
                   </label>
@@ -685,7 +721,7 @@ export function ReportForm({ userId }: ReportFormProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Contact Information</CardTitle>
-          <CardDescription>How can people reach you with information?</CardDescription>
+          <CardDescription>Private contact for the case owner and reviewers. Other users send sightings through Idanu.</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldGroup>
@@ -728,7 +764,7 @@ export function ReportForm({ userId }: ReportFormProps) {
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
+        <p className="text-xs text-muted-foreground">New cases are reviewed before public publication. Keep proof of ownership and sensitive details out of descriptions and photos.</p><Button type="submit" disabled={loading}>
           {loading ? <Spinner className="mr-2" /> : null}
           {loading ? 'Creating Report...' : 'Create Report'}
         </Button>

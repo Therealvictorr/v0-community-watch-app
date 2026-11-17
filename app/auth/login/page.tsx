@@ -51,7 +51,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">Community Watch</span>
+            <span className="text-2xl font-bold text-foreground">Idanu</span>
           </div>
           <p className="text-muted-foreground text-center">
             Keeping our community safe together

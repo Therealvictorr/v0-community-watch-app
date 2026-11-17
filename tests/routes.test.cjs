@@ -1,0 +1,17 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),load=require('./load-ts.cjs');
+const json=(body,options={})=>Response.json(body,options);
+const id='11111111-1111-4111-8111-111111111111';
+function statusRoute(user,owner='owner'){
+ const writes=[];const record={reporter_id:owner,report_type:'missing_child',person_details:{name:'Test person',state:'Lagos',case_kind:'reported_kidnapping'},item_details:null};
+ const client={auth:{getUser:async()=>({data:{user}})},from:()=>({select:()=>({eq:()=>({single:async()=>({data:record,error:null})})}),update:patch=>{writes.push(patch);return{eq:()=>({eq:async()=>({error:null})})}}})};
+ return{writes,POST:load('app/api/reports/[id]/status/route.ts',{'next/server':{NextResponse:{json}},'@/lib/supabase/server':{createClient:async()=>client}}).POST};
+}
+const request=body=>new Request('http://localhost/api/reports/'+id+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+// Request is intentionally passed as a normal object: route only calls json().
+const req=body=>({json:async()=>body});
+test('anonymous callers cannot update outcomes',async()=>{const r=statusRoute(null);assert.equal((await r.POST(req({status:'resolved',confirmed:true}),{params:Promise.resolve({id})})).status,401);assert.equal(r.writes.length,0)});
+test('another authenticated user cannot update the owner case',async()=>{const r=statusRoute({id:'other'});assert.equal((await r.POST(req({status:'resolved',confirmed:true}),{params:Promise.resolve({id})})).status,403);assert.equal(r.writes.length,0)});
+test('found outcome requires explicit confirmation and validates the area',async()=>{const r=statusRoute({id:'owner'});assert.equal((await r.POST(req({status:'resolved'}),{params:Promise.resolve({id})})).status,400);assert.equal((await r.POST(req({status:'resolved',confirmed:true,outcome_state:42}),{params:Promise.resolve({id})})).status,400)});
+test('owner outcome change preserves classification and records recovery separately',async()=>{const r=statusRoute({id:'owner'});assert.equal((await r.POST(req({status:'resolved',confirmed:true,outcome_state:' Kaduna ',outcome_location:'Chikun'}),{params:Promise.resolve({id})})).status,200);assert.equal(r.writes[0].person_details.case_kind,'reported_kidnapping');assert.equal(r.writes[0].person_details.state,'Lagos');assert.equal(r.writes[0].person_details.outcome_state,'Kaduna')});
+test('reopening clears the previous recovery location',async()=>{const r=statusRoute({id:'owner'});await r.POST(req({status:'active'}),{params:Promise.resolve({id})});assert.equal(r.writes[0].person_details.outcome_location,null);assert.equal(r.writes[0].person_details.outcome_state,null);assert.equal(r.writes[0].person_details.outcome_confirmed_at,null)});
+test('non-administrators cannot call review actions',async()=>{let called=false;const client={auth:{getUser:async()=>({data:{user:{id:'owner'}}})},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{id,reporter_id:'owner'}})})})}),rpc:async()=>{called=true;return{error:null}}};const route=load('app/api/cases/[id]/route.ts',{'next/server':{NextResponse:{json}},'@/lib/supabase/server':{createClient:async()=>client},'@/lib/case-access':{isAdmin:async()=>false}});const response=await route.POST(req({action:'review',decision:'approved',note:'A sufficiently long review note.'}),{params:Promise.resolve({id})});assert.equal(response.status,403);assert.equal(called,false)});

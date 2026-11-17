@@ -3,7 +3,16 @@
 export type ReportType = 'missing_child' | 'missing_item' | 'general_incident'
 export type ReportStatus = 'active' | 'resolved' | 'closed'
 
-export interface PersonDetails {
+export interface CaseDetails {
+  state?: string
+  locality?: string
+  outcome_location?: string
+  outcome_state?: string
+  outcome_confirmed_at?: string
+}
+
+export interface PersonDetails extends CaseDetails {
+  case_kind?: 'missing' | 'reported_kidnapping'
   name: string
   age?: number
   gender?: string
@@ -16,8 +25,10 @@ export interface PersonDetails {
   relationship_to_reporter?: string
 }
 
-export interface ItemDetails {
-  item_type: 'vehicle' | 'property' | 'pet' | 'other'
+export interface ItemDetails extends CaseDetails {
+  loss_type?: 'lost' | 'stolen'
+  listing_kind?: 'missing' | 'found'
+  item_type: 'vehicle' | 'property' | 'device' | 'document' | 'pet' | 'other'
   name?: string
   make?: string
   model?: string
@@ -31,6 +42,11 @@ export interface ItemDetails {
 }
 
 export interface Report {
+  moderation_status?: 'pending' | 'approved' | 'hidden' | 'rejected' | 'duplicate'
+  outcome_verification?: 'unverified' | 'pending' | 'verified' | 'disputed'
+  incident_id?: string
+  duplicate_of?: string
+  last_checked_at?: string
   id: string
   vcon_uuid: string
   report_type: ReportType

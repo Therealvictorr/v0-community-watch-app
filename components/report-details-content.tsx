@@ -113,7 +113,7 @@ export function ReportDetailsContent({
       {user && report.status === 'active' && (
         <SightingForm 
           reportId={report.id} 
-          onSightingSubmitted={handleSightingSubmitted}
+          userId={user?.id || null}
         />
       )}
 

@@ -1,6 +1,6 @@
 import { SigningStargateClient, StargateClient } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { fromBase64, toBase64 } from "@cosmjs/encoding";
+import { fromBase64, toBase64, toUtf8, fromUtf8 } from "@cosmjs/encoding";
 
 export interface XionConfig {
   rpcUrl: string;
@@ -29,7 +29,7 @@ export class XionClient {
         });
       } else {
         // Generate a new wallet for demo purposes
-        this.wallet = DirectSecp256k1HdWallet.generate(12, {
+        this.wallet = await DirectSecp256k1HdWallet.generate(12, {
           prefix: XION_CONFIG.prefix,
         });
       }
@@ -101,7 +101,7 @@ export class XionClient {
             value: {
               sender: this.address,
               contract: contractAddress,
-              msg: toBase64(JSON.stringify(msg)),
+              msg: toUtf8(JSON.stringify(msg)),
               funds: [],
             },
           },
@@ -123,12 +123,12 @@ export class XionClient {
     }
 
     try {
-      const queryClient = await StargateClient.connect(XION_CONFIG.rpcUrl);
-      const result = await queryClient.queryContractSmart(
-        contractAddress,
-        queryMsg
-      );
-      return result;
+      const restUrl = process.env.NEXT_PUBLIC_XION_REST_URL;
+      if (!restUrl) throw new Error('Set NEXT_PUBLIC_XION_REST_URL to enable legacy contract queries');
+      const response = await fetch(restUrl.replace(/\/$/, '') + '/cosmwasm/wasm/v1/contract/' + encodeURIComponent(contractAddress) + '/smart/' + encodeURIComponent(toBase64(toUtf8(JSON.stringify(queryMsg)))));
+      if (!response.ok) throw new Error('Contract query failed');
+      const result = await response.json();
+      return JSON.parse(fromUtf8(fromBase64(result.data)));
     } catch (error) {
       console.error("Failed to query contract:", error);
       throw new Error("Failed to query contract");

@@ -43,7 +43,7 @@ export default function SignUpPage() {
       password,
       options: {
         emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-          `${window.location.origin}/`,
+          `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
         },
@@ -65,7 +65,7 @@ export default function SignUpPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-2 mb-2">
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">Community Watch</span>
+            <span className="text-2xl font-bold text-foreground">Idanu</span>
           </div>
           <p className="text-muted-foreground text-center">
             Join our community and help keep everyone safe
