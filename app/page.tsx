@@ -5,6 +5,8 @@ import { Header } from '@/components/header'
 import { CaseDashboard } from '@/components/case-dashboard'
 import type { Report } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   if (!isSupabaseConfigured()) return <><Header user={null} /><CaseDashboard reports={mockReports} demo /></>
   const supabase = await createClient()
@@ -18,7 +20,11 @@ export default async function HomePage() {
       .eq('moderation_status','approved')
       .in('report_type', ['missing_child', 'missing_item'])
       .order('created_at', { ascending: false }).order('id').range(offset, offset + 499)
-    if (error) { failed = true; break }
+    if (error) {
+      console.error('Idanu public case query failed', { code: error.code || 'FETCH_ERROR', message: error.message })
+      failed = true
+      break
+    }
     reports.push(...(data || []))
     if (!data || data.length < 500) break
   }

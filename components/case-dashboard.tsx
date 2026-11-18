@@ -52,7 +52,7 @@ export function CaseDashboard({ reports, demo = false, failed = false }: { repor
     {demo && <div className="circle-notice">Preview mode · Illustrative cases only. These are not real missing-person reports.</div>}
     {failed && <div role="alert" className="circle-notice">Cases could not be loaded. Statistics are unavailable. Please refresh to try again.</div>}
     <section className="circle-hero">
-      <div><div className="circle-eyebrow"><span /> EVERY UPDATE BRINGS US CLOSER</div>
+      <div>
         <h1>Someone is looking.<br /><em>Let’s help them find.</em></h1>
         <p>A shared place for missing people, lost belongings, and the updates that matter. One case. One current story.</p>
         <div className="circle-actions"><Link className="circle-primary" href="/reports/new">Create a report <ArrowUpRight size={18} /></Link><a className="circle-secondary" href="#cases">Explore cases <ArrowRight size={17} /></a></div>
