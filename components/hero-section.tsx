@@ -32,7 +32,7 @@ export function HeroSection({ user }: HeroSectionProps) {
                 <>
                   <Button asChild variant="outline" size="lg">
                     <Link href="/auth/sign-up">
-                      Join SafeCircle
+                      Join Idanu
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -53,9 +53,8 @@ export async function POST(request: Request) {
       .insert({
         report_id,
         description,
-        location,
-        sighting_at: sighting_at || new Date().toISOString(),
-        contact_info,
+        location_description: location,
+        sighted_at: sighting_at || new Date().toISOString(),
         reporter_id: user.id,
       })
       .select()
@@ -127,7 +126,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const reportId = searchParams.get('report_id')
 
@@ -138,6 +137,9 @@ export async function GET(request: Request) {
       )
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Sign in to view your sightings.' }, { status: 401 })
+    const { data: report } = await supabase.from('reports').select('reporter_id').eq('id', reportId).single()
     const { data: sightings, error } = await supabase
       .from('sightings')
       .select(`
@@ -158,7 +160,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      sightings: sightings || [],
+      sightings: (sightings || []).filter(s => report?.reporter_id === user.id || s.reporter_id === user.id),
     })
 
   } catch (error) {

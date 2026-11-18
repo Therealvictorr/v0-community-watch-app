@@ -1,6 +1,6 @@
-# SafeCircle
+# Idanu
 
-SafeCircle is an AI-powered community safety platform for reporting missing people, missing items, stolen vehicles, and local safety concerns.
+Idanu is an AI-powered community safety platform for reporting missing people, missing items, stolen vehicles, and local safety concerns.
 
 ## Features
 

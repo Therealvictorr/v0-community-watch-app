@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ShareButton } from '@/components/share-button'
 import { ReportStatusManager } from '@/components/report-status-manager'
-import { GoogleMaps } from '@/components/map/google-maps'
+import { CaseLocationMap } from '@/components/case-location-map'
+import { caseLabel, detailsOf, statusLabel } from '@/lib/cases'
 import { AiAnalysis } from '@/components/ai-analysis'
 import { SightingForm } from '@/components/sighting-form'
 import { Report, Sighting } from '@/lib/types'
@@ -41,15 +42,16 @@ export function ReportDetailsClient({ report, sightings, vcon, userId }: ReportD
 
   return (
     <div className="space-y-6">
+      {report.id.startsWith('demo-') && <p className="rounded-lg border bg-amber-50 p-4 text-sm text-amber-900">Illustrative demo case. This is not a real missing-person or property report.</p>}
       {/* Header with share */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Badge className={config.color}>
               <TypeIcon className="h-3 w-3 mr-1" />
-              {config.label}
+              {caseLabel(report)}
             </Badge>
-            <Badge variant="outline">{report.status}</Badge>
+            <Badge variant="outline">{statusLabel(report)}</Badge>
           </div>
           <h1 className="text-3xl font-bold">{report.subject}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
@@ -80,6 +82,8 @@ export function ReportDetailsClient({ report, sightings, vcon, userId }: ReportD
         </div>
       </div>
 
+      <p className="text-xs text-muted-foreground">Last updated {new Date(report.updated_at || report.created_at).toLocaleString('en-GB', { timeZone: 'Africa/Lagos' })} WAT · Status reported by the case owner. Outcome review: {report.outcome_verification || 'unverified'}.</p>
+      {report.status === 'resolved' && detailsOf(report)?.outcome_location && <p className="rounded-lg border bg-secondary p-4 text-sm text-primary">Reported found / recovered in {detailsOf(report)?.outcome_location}</p>}
       {/* Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -171,25 +175,21 @@ export function ReportDetailsClient({ report, sightings, vcon, userId }: ReportD
 
         {/* Map Tab */}
         <TabsContent value="map" className="space-y-4">
-          <GoogleMaps 
-            reports={[report]} 
-            sightings={sightings}
-            height="500px"
-          />
+          <CaseLocationMap report={report} />
         </TabsContent>
 
         {/* Sightings Tab */}
         <TabsContent value="sightings" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Recent Sightings</CardTitle>
+              <CardTitle className="text-lg">Private sighting inbox</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {sightings.length === 0 ? (
                 <div className="text-center py-6 text-muted-foreground">
                   <Eye className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                  <p>No sightings have been reported yet.</p>
-                  <p className="text-sm">If you&apos;ve seen something, submit a sighting below.</p>
+                  <p>No sightings are visible to you.</p>
+                  <p className="text-sm">Sightings are visible to the case owner and the person who submitted them.</p>
                 </div>
               ) : (
                 sightings.map((sighting) => (
@@ -221,7 +221,7 @@ export function ReportDetailsClient({ report, sightings, vcon, userId }: ReportD
           </Card>
 
           {/* Sighting Submission Form */}
-          <SightingForm reportId={report.id} userId={userId} />
+          {report.status === 'active' && <SightingForm reportId={report.id} userId={userId} />}
         </TabsContent>
 
         {/* Management Tab */}
@@ -236,8 +236,7 @@ export function ReportDetailsClient({ report, sightings, vcon, userId }: ReportD
             userId={userId}
           />
 
-          {/* AI Analysis */}
-          <AiAnalysis reportId={report.id} />
+
 
           {/* vCon Download */}
           <Card>

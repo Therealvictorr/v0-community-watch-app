@@ -1,9 +1,11 @@
+import { isSupabaseConfigured } from '@/lib/supabase/env'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/header'
 import { ReportForm } from '@/components/report-form'
 
 export default async function NewReportPage() {
+  if (!isSupabaseConfigured()) return <><Header user={null}/><main className="max-w-2xl mx-auto p-8"><h1 className="text-2xl font-bold">Report creation is unavailable in this preview</h1><p className="mt-3">The case board contains illustrative data. No report will be submitted from this preview.</p></main></>
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

@@ -3,22 +3,22 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SafeCircle - Report & Find Missing Persons and Items',
+  title: 'Idanu - Report & Find Missing Persons and Items',
   description:
     'A community-driven platform to report missing children, vehicles, and items. Help your neighbors stay safe by reporting sightings and keeping watch together.',
-  generator: 'SafeCircle',
+  generator: 'Idanu',
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
+        url: '/idanu-icon.svg',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/idanu-icon.svg',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon.svg',
+        url: '/idanu-icon.svg',
         type: 'image/svg+xml',
       },
     ],

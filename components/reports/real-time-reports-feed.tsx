@@ -514,18 +514,18 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
                 {(report.attachments && report.attachments.length > 0) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={report.attachments[0]?.url}
+                    src={report.attachments?.[0]?.url}
                     alt={report.subject || 'Report image'}
                     className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                     onError={(e) => {
-                      console.error('Image failed to load:', report.attachments[0]?.url, e);
+                      console.error('Image failed to load:', report.attachments?.[0]?.url, e);
                       // Fallback to placeholder on error
                       const target = e.target as HTMLImageElement;
                       target.src = `https://picsum.photos/seed/${report.report_type}-${report.id}/600/400.jpg`;
                       target.style.opacity = '0.8';
                     }}
                     onLoad={(e) => {
-                      console.log('Image loaded successfully:', report.attachments[0]?.url);
+                      console.log('Image loaded successfully:', report.attachments?.[0]?.url);
                     }}
                   />
                 ) : (

@@ -110,7 +110,7 @@ export function InteractiveMap({ reports, userLocation, onReportClick }: Interac
     });
     
     // Sort each group by time and create trajectory lines
-    const trajectoryLines = [];
+    const trajectoryLines: {start:{lat:number;lng:number};end:{lat:number;lng:number};reportType:string}[] = [];
     Object.values(reportGroups).forEach(group => {
       const sortedGroup = group.sort((a, b) => 
         new Date(a.last_seen_at).getTime() - new Date(b.last_seen_at).getTime()
@@ -340,7 +340,7 @@ export function InteractiveMap({ reports, userLocation, onReportClick }: Interac
                 className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 z-30"
                 style={{
                   left: `${((report.longitude - (-74.1)) / 0.2) * 100}%`,
-                  top: `${((40.8 - report.lat) / 0.2) * 100}%`,
+                  top: `${((40.8 - report.latitude) / 0.2) * 100}%`,
                 }}
                 onClick={() => handleReportClick(report)}
               >
@@ -370,7 +370,7 @@ export function InteractiveMap({ reports, userLocation, onReportClick }: Interac
                   </div>
                   <p className="text-sm text-gray-600 mb-2">{selectedReport.last_seen_location}</p>
                   <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>{formatTimeAgo(selectedReport.created_at)}</span>
+                    <span>{formatTimeAgo(selectedReport.last_seen_at)}</span>
                     <span>{selectedReport.sighting_count} sightings</span>
                   </div>
                 </div>

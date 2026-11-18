@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { BrandLogo } from '@/components/brand-logo'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Shield, Mail } from 'lucide-react'
@@ -9,7 +8,10 @@ export default function SignUpSuccessPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <BrandLogo className="mb-2" textClassName="text-3xl" />
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="h-8 w-8 text-primary" />
+            <span className="text-2xl font-bold text-foreground">Idanu</span>
+          </div>
         </div>
 
         <Card>

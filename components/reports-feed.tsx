@@ -76,13 +76,7 @@ export function ReportsFeed({ reports }: ReportsFeedProps) {
         </div>
 
         {filteredReports.length === 0 ? (
-          <Empty
-            title="No reports found"
-            description={searchQuery || typeFilter !== 'all' 
-              ? "Try adjusting your search or filters" 
-              : "No active reports in your community yet"
-            }
-          />
+          <div className="p-8 text-center"><h3>No reports found</h3><p>Try adjusting your search or filters.</p></div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredReports.map((report) => (

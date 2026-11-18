@@ -23,8 +23,8 @@ export class AIResponseGenerator {
     return {
       type: isUrgent ? 'warning' : sightingCount > 0 ? 'sighting' : 'verification',
       content: isUrgent
-        ? `This report appears high priority. SafeCircle recommends notifying trusted neighbors, checking recent sightings, and sharing verified details with local responders.`
-        : `SafeCircle analyzed this report against recent community activity. The available details look consistent, and nearby community members can help improve accuracy with sightings or updates.`,
+        ? `This report appears high priority. Idanu recommends notifying trusted neighbors, checking recent sightings, and sharing verified details with local responders.`
+        : `Idanu analyzed this report against recent community activity. The available details look consistent, and nearby community members can help improve accuracy with sightings or updates.`,
       confidence,
       communityVerified: confidence >= 0.75,
       suggestedActions: [
@@ -32,7 +32,7 @@ export class AIResponseGenerator {
         'Add sightings only when details are confirmed',
         'Keep location and description updates current',
       ],
-      relatedEntities: ['SafeCircle Community', report.category || report.report_type || 'Local Reports'].filter(Boolean),
+      relatedEntities: ['Idanu Community', report.category || report.report_type || 'Local Reports'].filter(Boolean),
       metadata: {
         responseTime: performance.now() - start,
         dataSource: ['Community reports', 'Sightings', 'AI pattern analysis'],

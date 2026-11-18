@@ -140,7 +140,7 @@ export function ReportProgressTracker({ reportId, reportTitle, reportType }: Rep
           avatar: "/avatars/sarah.jpg"
         },
         {
-          name: "SafeCircle",
+          name: "Idanu",
           role: "Volunteer"
         }
       ],
