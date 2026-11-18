@@ -46,3 +46,12 @@ In-app notifications are durable once the migration is applied. External email, 
 - The read-only Supabase probe returned fetch/network failures, so the remote schema state could not be established. No migration was applied and no live account or case was created.
 - `tests/security.sql` has been written but not executed; database RLS, storage permissions and the real authenticated journey remain unverified until a privileged database connection is available.
 - Browser and Windows visual automation could not initialize. Mobile/visual QA remains outstanding.
+
+## Integration update — 18 November 2026
+
+- Integrated the current main branch while preserving its removal of blockchain features.
+- Removed the hero eyebrow and retained the blue Idanu branding.
+- Updated Next.js to 16.4.6 and Zod to 4.6.7, removed unused Cosmos packages, and applied non-breaking transitive dependency fixes. The dependency audit reports zero vulnerabilities.
+- The user reported a successful launch migration. Read-only checks now confirm that the configured project exposes the required schema and functions; the exact anonymous landing query returns HTTP 200 with zero approved rows. Do not rerun the launch bundle on this already-migrated database.
+- The deployed preview loading error was traced to DNS ENOTFOUND for an old Supabase project hostname. The locally configured project is different and its anonymous query succeeds. Update Vercel Preview and Production to the matching URL and anon key from the working local .env.local, then create a new deployment. SQL does not need to be rerun. Live verification is pending that environment correction.
+- Current product branding is Idanu. Historical deployment logs are not rewritten by branch renames.

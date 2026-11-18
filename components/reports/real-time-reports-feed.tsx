@@ -28,9 +28,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/env';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { Trash2 } from 'lucide-react';
-import { createClient as createServerClient } from '@/lib/supabase/server';
 import { AIResponsePanel } from '@/components/ai/ai-response-panel';
 import { GeneratedResponse } from '@/lib/ai-response-generator';
 
@@ -50,8 +50,6 @@ interface Report {
     full_name: string;
     avatar_url: string;
   };
-  blockchain_tx_hash?: string;
-  stored_on_chain?: boolean;
   progress?: {
     stage: string;
     percentage: number;
@@ -91,10 +89,10 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
   const [aiResponses, setAiResponses] = useState<Record<string, GeneratedResponse>>({});
   const [expandedAIReports, setExpandedAIReports] = useState<Set<string>>(new Set());
 
-  const supabase = createClient();
+  const supabase = isSupabaseConfigured() ? createClient() : null;
   
-  // Convert database Report to blockchain Report format
-  const convertToBlockchainReport = (dbReport: Report) => {
+  // Convert database Report to community Report format
+  const convertToCommunityReport = (dbReport: Report) => {
     return {
       id: dbReport.id,
       title: dbReport.subject,
@@ -134,6 +132,7 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
 
   // Real-time subscription to reports
   useEffect(() => {
+    if (!supabase) return;
     console.log('Setting up real-time subscription...');
     
     const channel = supabase
@@ -247,6 +246,7 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
   };
 
   const refreshReports = async () => {
+    if (!supabase) return;
     console.log('Manual refresh triggered...');
     setLoading(true);
     try {
@@ -544,11 +544,6 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
                     <Badge variant="outline" className={getStatusColor(report.status)}>
                       {report.status}
                     </Badge>
-                    {report.stored_on_chain && (
-                      <Badge variant="outline" className="bg-purple-50">
-                        Blockchain
-                      </Badge>
-                    )}
                   </div>
                   {distance && (
                     <Badge variant="outline" className="text-xs">
@@ -673,7 +668,7 @@ export function RealTimeReportsFeed({ initialReports = [], userLocation, current
               {expandedAIReports.has(report.id) && (
                 <div className="border-t">
                   <AIResponsePanel 
-                    report={convertToBlockchainReport(report)}
+                    report={convertToCommunityReport(report)}
                     onResponseGenerated={(response) => handleAIResponseGenerated(report.id, response)}
                   />
                 </div>
